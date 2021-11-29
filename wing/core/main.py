@@ -199,12 +199,12 @@ class WingOfEvidence(BaseEstimator, TransformerMixin):
             X, y = df["X"].values, df["y"].values
             self._print("Starting optimizer search")
             self.optimizer_obj = WingOptimizer(x=X, y=y,
-                                           total_good=self.__TOTAL_GOOD, total_bad=self.__TOTAL_BAD,
-                                           n_initial=self.n_initial, n_target=self.n_target,
-                                           optimizer=self.optimizer, verbose=self.verbose,
-                                           bin_size_increase=self.bin_size_increase,
-                                           bin_minimal_size=self.bin_minimal_size, is_monotone=self.is_monotone,
-                                           tree_random_state=self.tree_random_state)
+                                               total_good=self.__TOTAL_GOOD, total_bad=self.__TOTAL_BAD,
+                                               n_initial=self.n_initial, n_target=self.n_target,
+                                               optimizer=self.optimizer, verbose=self.verbose,
+                                               bin_size_increase=self.bin_size_increase,
+                                               bin_minimal_size=self.bin_minimal_size, is_monotone=self.is_monotone,
+                                               tree_random_state=self.tree_random_state)
             self.optimal_edges, best_gini = self.optimizer_obj.optimize()
             self._print("Optimal edges found: %s" % self.optimal_edges)
             self._print("With gini: %0.4f" % best_gini)
@@ -445,15 +445,15 @@ class WingsOfEvidence(BaseEstimator, TransformerMixin):
         Returns:
             self
         """
-        if self.columns_to_apply == "all":
-            self.columns_to_apply = X.columns
+        if isinstance(self.columns_to_apply, str) and self.columns_to_apply == "all":
+            self.columns_to_apply = [i for i in range(X.shape[1])]
         self.fitted_wing = {}
         self.gini_dict = {}
         self.error_columns = []
         for column in self.columns_to_apply:
             self._print("==="*20)
             self._print("Working with variable: %s"%column)
-            X_vec = X[column]
+            X_vec = X[:, column]
             column_dict = self.mass_spec_values.get(column)
             if not column_dict:
                 spec_values = {}
@@ -479,10 +479,10 @@ class WingsOfEvidence(BaseEstimator, TransformerMixin):
         for column in self.columns_to_apply:
             if column not in self.error_columns:
                 woe_transformer = self.fitted_wing[column]
-                woe_values = woe_transformer.transform(X[column])["woe"]
+                woe_values = woe_transformer.transform(X[:, column])["woe"]
                 result_frame["WOE_%s" % column] = woe_values
                 if not self.only_values:
-                    result_frame["WOE_g_%s" % column] = woe_transformer.transform(X[column])["woe_group"]
+                    result_frame["WOE_g_%s" % column] = woe_transformer.transform(X[:, column])["woe_group"]
         return result_frame
 
     def get_gini_vector(self):
